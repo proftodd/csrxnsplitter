@@ -1,3 +1,3 @@
 # Reaction Splitter (C#)
 
-Testing out cheminformatics in C# using Indigo
+Testing out cheminformatics in C# using NCDK
