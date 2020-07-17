@@ -133,5 +133,16 @@ namespace RxnSplitter
             Assert.IsTrue(edges.Exists(e => e.GetProperty<string>(CDKPropertyName.SMILES) == "[CH3:5][CH2:6][OH:7]>>[CH3:5][CH2:6][O:7][C:2](=[O:3])[CH3:1]"));
             Assert.IsTrue(edges.Exists(e => e.GetProperty<string>(CDKPropertyName.SMILES) == "[CH3:1][C:2](=[O:3])[OH:4]>>[CH3:5][CH2:6][O:7][C:2](=[O:3])[CH3:1]"));
         }
+
+        [Test]
+        public void it_generates_InChIKeys_correctly()
+        {
+            var edge = Splitter.ParseAndSplitReaction(methaneOxidation)[0];
+            edge.SetProperty(CDKPropertyName.SMILES, methaneOxidation);
+            var ikPair = Splitter.GetInchiKeyPair(edge);
+            Assert.AreEqual("VNWKTOKETHGBQD-UHFFFAOYSA-N", ikPair.Item1);
+            Assert.AreEqual("CURLTUGMZLYLDI-UHFFFAOYSA-N", ikPair.Item2);
+            Assert.AreEqual("C>>O=C=O", ikPair.Item3);
+        }
     }
 }

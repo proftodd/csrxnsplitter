@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NCDK;
 using NCDK.Default;
+using NCDK.Graphs.InChI;
 using NCDK.Smiles;
 using NCDK.Tools.Manipulator;
 
@@ -11,6 +12,7 @@ namespace RxnSplitter
     public class Splitter
     {
         private static SmilesGenerator sg = new SmilesGenerator(SmiFlavors.Default | SmiFlavors.AtomAtomMap);
+        private static readonly InChIGeneratorFactory inchiGeneratorFactory = InChIGeneratorFactory.Instance;
 
         public static List<IReaction> ParseAndSplitReaction(string smiles)
         {
@@ -114,6 +116,30 @@ namespace RxnSplitter
                 newRxn.SetProperty(CDKPropertyName.SMILES, sg.Create(newRxn));
                 return newRxn;
             }).ToList();
+        }
+
+        public static Tuple<string, string, string> GetInchiKeyPair(IReaction edge)
+        {
+            var rctInchi = GenerateInchi(edge.Reactants[0]);
+            var prdInchi = GenerateInchi(edge.Products[0]);
+            if (rctInchi == null || prdInchi == null)
+            {
+                return null;
+            } else {
+                return Tuple.Create(rctInchi, prdInchi, edge.GetProperty<string>(CDKPropertyName.SMILES));
+            }
+        }
+
+        private static string GenerateInchi(IAtomContainer sub)
+        {
+            var inchiGenerator = inchiGeneratorFactory.GetInChIGenerator(sub);
+            var returnStatus = inchiGenerator.ReturnStatus;
+            if (returnStatus == InChIReturnCode.Warning || returnStatus == InChIReturnCode.Ok){
+                return inchiGenerator.GetInChIKey();
+            } else
+            {
+                return null;
+            }
         }
     }
 }
