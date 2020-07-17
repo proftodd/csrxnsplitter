@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NCDK;
@@ -49,18 +50,14 @@ namespace RxnSplitter
                 ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             IDictionary<IAtom, IAtom> rctMap = rctMapNumbers.
                 Select(kvp => {
-                    IMapping theMapping;
                     IMapping outMapping;
+                    IAtom prdAtom = null;
                     if (atomMap.TryGetValue(kvp.Key, out outMapping))
                     {
-                        theMapping = outMapping;
-                    } else
-                    {
-                        theMapping = new Mapping(kvp.Value, null);
+                        prdAtom = (IAtom) outMapping[1];
                     }
-                    return new KeyValuePair<IAtom, IMapping>(kvp.Value, outMapping);
+                    return new KeyValuePair<IAtom, IAtom>(kvp.Value, prdAtom);
                 }).
-                Select(kvp => new KeyValuePair<IAtom, IAtom>(kvp.Key, (IAtom) kvp.Value[1])).
                 ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             return rctMap;
         }
@@ -69,8 +66,8 @@ namespace RxnSplitter
         {
             return atomList.
                 SelectMany(sub => sub.Atoms).
-                Where(atom => atom.GetProperty<int>(CDKPropertyName.AtomAtomMapping, -1) != -1).
-                Select(atom => new KeyValuePair<int, IAtom>(atom.GetProperty<int>(CDKPropertyName.AtomAtomMapping), atom)).
+                Select(atom => new KeyValuePair<int, IAtom>(atom.GetProperty<int>(CDKPropertyName.AtomAtomMapping, Int32.MaxValue), atom)).
+                Where(kvp => kvp.Key != Int32.MaxValue).
                 ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
     }
